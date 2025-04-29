@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Currency Converter</title>
+  <style>
+  body {
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(to right, #e3f2fd, #ffffff);
+  margin: 0;
+  padding: 40px;
+  color: #333;
+}
+
+h2 {
+  color: #0d47a1;
+  font-size: 32px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.container {
+  max-width: 1000px;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.box {
+  background: #ffffffcc;
+  backdrop-filter: blur(8px);
+  border-radius: 20px;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+  padding: 30px;
+}
+
+select, input[type="number"], input[type="text"], button {
+  padding: 12px 15px;
+  margin: 10px 5px;
+  font-size: 18px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  outline: none;
+  background: #f5faff;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+select:focus, input:focus {
+  border-color: #2196f3;
+  background: #ffffff;
+}
+
+#button {
+  background: linear-gradient(135deg, #2196f3, #0d47a1);
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  width: 20%;
+  padding-top: 1%;
+  padding-bottom: 1%;
+  font-size: 18px;
+  border-radius: 8px;
+  outline: none;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+button:hover {
+  background-color: #1565c0;
+  transform: translateY(-2px);
+}
+
+#conversionResult {
+  font-size: 24px;
+  color: #1565c0;
+  margin-top: 20px;
+  margin-left: 10px;
+  font-weight: bold;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  font-size: 17px;
+  background-color: #ffffff;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+}
+
+th, td {
+  padding: 15px;
+  border: 1px solid #eee;
+  text-align: center;
+}
+
+th {
+  background-color: #bbdefb;
+  font-weight: bold;
+  color: #0d47a1;
+}
+
+tr:hover {
+  background: linear-gradient(to right, #e3f2fd, #bbdefb);
+}
+
+#ratesTable tbody tr:nth-child(even) {
+  background-color: #f0faff;
+}
+
+input[type="text"] {
+  width: 300px;
+}
+
+@media (max-width: 700px) {
+  .container {
+    padding: 10px;
+  }
+  select, input, button {
+    width: 100%;
+    margin: 10px 0;
+  }
+}
+
+.currency-row {
+  text-align: center;
+  align-items: center;
+  gap: 10px;
+}
+
+.currency-row label {
+  margin-right: 5px;
+}
+
+.currency-row select {
+  width: 160px;
+  padding: 8px;
+}
+.arrow-icon {
+  display: inline-block;
+  margin: 0 10px;
+  font-size: 45px;
+  font-weight: 800px;
+  color: #1a2b50;
+  vertical-align: middle;
+}
+
+#swapButton{
+	
+}
+
+  </style>
+
+</head>
+<body>
+
+  <div class="container">
+
+    <div class="box converter">
+  <h2>Currency Converter</h2>
+  <div class="row currency-row">
+    <select id="fromCurrency" onchange="convertCurrency()"></select>
+    <button id="swapButton" onclick="swapCurrencies()">⇄</button>
+    <select id="toCurrency" onchange="convertCurrency()"></select><br>
+    <span id="validation" style="color:red;display:none;"></span>
+    <input type="number" id="amount" placeholder="Amount" min='1' /><br>
+    <button id="button" onclick="convertCurrency()">Convert</button>
+    <h3 id="conversionResult">Converted Amount : -</h3>
+  </div>
+</div>
+
+
+    <div class="box rates">
+      <h2>All Currency Rates</h2>
+      <input type="text" id="filterCurrency" placeholder="Filter by currency code..." oninput="filterRates()" />
+      <input type="text" id="filterRate" placeholder="Filter by rate..." oninput="filterRates()" />
+      <table id="ratesTable">
+        <thead>
+          <tr>
+            <th>Currency</th>
+            <th>Rate</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <script>
+    const apiKey = '1SMxQumaAcC996SUXGsnlBPW44t2RR82';
+
+    async function loadCurrencies() {
+      const res = await fetch(`https://api.currencybeacon.com/v1/currencies?api_key=${apiKey}`);
+      const data = await res.json();
+      const currencies = data.response;
+      const fromSelect = document.getElementById('fromCurrency');
+      const toSelect = document.getElementById('toCurrency');
+
+      for (let code in currencies) {
+  const shortCode = currencies[code].short_code;
+
+  const optionFrom = document.createElement("option");
+  optionFrom.value = shortCode;
+  optionFrom.textContent = shortCode;
+  fromSelect.appendChild(optionFrom);
+
+  const optionTo = document.createElement("option");
+  optionTo.value = shortCode;
+  optionTo.textContent = shortCode;
+  toSelect.appendChild(optionTo);
+}
+
+
+      fromSelect.value = "USD";
+      toSelect.value = "AUD";
+    }-21
+
+    async function convertCurrency() {
+      const from = document.getElementById('fromCurrency').value;
+      const to = document.getElementById('toCurrency').value;
+      const amount = document.getElementById('amount').value;
+
+      if (!amount || amount <= 0) {
+  const validation = document.getElementById('validation');
+  validation.innerHTML = "Please Enter Amount";
+  validation.style.display = "block";
+
+  setTimeout(() => {
+    validation.style.display = "none";
+  }, 2000); // 2000 milliseconds = 2 seconds
+
+  return;
+}
+
+
+      const res = await fetch(`https://api.currencybeacon.com/v1/convert?api_key=${apiKey}&from=${from}&to=${to}&amount=${amount}`);
+      const data = await res.json();
+      const result = data.response.value;
+
+      document.getElementById('conversionResult').innerText = `Converted Amount : ${result.toFixed(2)} ${to}`;
+    }
+
+    async function loadRates() {
+      const res = await fetch(`https://api.currencybeacon.com/v1/latest?api_key=${apiKey}`);
+      const data = await res.json();
+      const rates = data.response.rates;
+      const tbody = document.querySelector("#ratesTable tbody");
+
+      for (let code in rates) {
+        const row = `<tr><td>${code}</td><td>${rates[code]}</td></tr>`;
+        tbody.innerHTML += row;
+      }
+    }
+
+    function filterRates() {
+      const currencyInput = document.getElementById("filterCurrency").value.toLowerCase();
+      const rateInput = document.getElementById("filterRate").value.toLowerCase();
+      const rows = document.querySelectorAll("#ratesTable tbody tr");
+
+      rows.forEach(row => {
+        const [currencyCell, rateCell] = row.children;
+        const currencyMatch = currencyCell.textContent.toLowerCase().includes(currencyInput);
+        const rateMatch = rateCell.textContent.toLowerCase().includes(rateInput);
+        row.style.display = currencyMatch && rateMatch ? "" : "none";
+      });
+    }
+    
+    function swapCurrencies() {
+    let fromSelect = document.getElementById('fromCurrency');
+    let toSelect = document.getElementById('toCurrency');
+    
+    let temp = fromSelect.value;
+    fromSelect.value = toSelect.value;
+    toSelect.value = temp;
+    convertCurrency();
+}
+
+    // Initialize
+    loadCurrencies();
+    loadRates();
+  </script>
+
+</body>
+</html>
+
